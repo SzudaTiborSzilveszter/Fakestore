@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { productType } from "../types/productType";
+import { getProducts } from "../services/ProductService";
 
 interface ProductContextType{
     productsList:productType[]
@@ -9,6 +10,23 @@ const ProductContext=createContext<ProductContextType|undefined>(undefined);
 
 export function ProductProvider({children}:{children:ReactNode}){
     const [productsList,setProductsList]=useState<productType[]>([])
+    const [load,setLoad]=useState<boolean>(true);
+    const [error,setError]=useState<string|null>(null);
+
+    useEffect(()=>{
+        getProducts().then(data => {
+            setProductsList(data)
+            setError(null)
+        })
+        .catch(()=>{
+            setError("Nem sikerült betöltei az adatokat!")
+        })
+        .finally(()=>{
+            setLoad(false)
+        });
+        
+    },[])
+    
     return (
         <ProductContext.Provider value= {{productsList}}>
             {children}
